@@ -109,7 +109,7 @@
   const entryMode=isMobileView()?'volunteer':(volunteerEntry?'volunteer':'staff');
   const privateVolunteerViews=['apply','progress','profile','messages'];
   const demoCredentials={staff:{username:'demo-staff',password:'GreenRiver@2026'},volunteer:{username:'demo-volunteer',password:'GreenRiver@2026'}};
-  const state={authenticated:false,mode:entryMode,staffView:'dashboard',previousStaffView:'applications',detailApplicantId:null,sensitiveAccess:false,volView:'home',showVolunteerLogin:isMobileView()&&!volunteerEntry,loginReturnView:'home',selected:new Set(),query:'',status:'全部状态',project:'全部项目',batch:'全部批次',drawer:null,formStep:1,choices:['source','post'],appSubmitted:false,profileEditing:false,projectEditing:null};
+  const state={authenticated:false,mode:entryMode,staffView:'dashboard',previousStaffView:'applications',detailApplicantId:null,sensitiveAccess:false,volView:'home',showVolunteerLogin:false,loginReturnView:'home',selected:new Set(),query:'',status:'全部状态',project:'全部项目',batch:'全部批次',drawer:null,formStep:1,choices:['source','post'],appSubmitted:false,profileEditing:false,projectEditing:null};
   let projectDraft=null;
   const staffNav=[['dashboard','总览工作台','总'],['projects','项目配置','项'],['batches','招募批次','招'],['applications','申请池','申'],['interviews','面试与健康','审'],['admission','录取与分配','录'],['service','到岗与服务','服'],['notifications','通知中心','信'],['reports','数据与导出','数'],['permissions','权限管理','权']];
 
@@ -133,7 +133,7 @@
     return `<main class="auth-page ${staff?'staff-auth-page':''}">${visual}<section class="auth-panel"><div class="auth-card">${back}${mobileBrand}${roleSwitch}<div class="auth-role-label">${entryLabel}</div><h2>${title}</h2><p class="auth-lead">${lead}</p>${form}<p class="auth-security"><i>安全提示</i><span>当前为静态演示登录，模拟账号仅用于页面体验，不会持久化保存。正式上线后将接入服务器身份验证和权限控制。</span></p></div></section></main>`
   }
   function togglePassword(button){const input=button.parentElement.querySelector('input');const show=input.type==='password';input.type=show?'text':'password';button.textContent=show?'隐藏':'显示'}
-  function setLoginRole(role){if(role!=='staff'&&role!=='volunteer')return;if(role==='staff'&&isMobileView()){toast('手机端仅提供志愿者入口');return}state.authenticated=false;state.mode=role;state.showVolunteerLogin=role==='volunteer';state.loginReturnView='home';render();window.scrollTo(0,0)}
+  function setLoginRole(role){if(role!=='staff'&&role!=='volunteer')return;if(role==='staff'&&isMobileView()){toast('手机端仅提供志愿者入口');return}state.authenticated=false;state.mode=role;state.loginReturnView='home';state.showVolunteerLogin=false;if(role==='volunteer')state.volView='home';render();window.scrollTo(0,0)}
   function handleLogin(event,role){event.preventDefault();if(role!==state.mode)return;const form=event.currentTarget;const credentials=demoCredentials[role];if(form.elements.account.value.trim()!==credentials.username||form.elements.password.value!==credentials.password){toast('模拟账号或密码不正确');return}completeLogin(role)}
   function completeLogin(role){state.authenticated=true;state.mode=role;state.sensitiveAccess=false;if(role==='volunteer'){state.showVolunteerLogin=false;state.volView=state.loginReturnView||'home';state.loginReturnView='home'}location.hash=role;render();window.scrollTo(0,0);setTimeout(()=>toast(role==='staff'?'已进入工作人员端':'已登录志愿者个人中心'),80)}
   function logout(){state.authenticated=false;state.sensitiveAccess=false;state.drawer=null;state.volView='home';state.showVolunteerLogin=false;state.loginReturnView='home';document.getElementById('drawerMask').classList.remove('open');render();window.scrollTo(0,0);setTimeout(()=>toast(state.mode==='volunteer'?'已退出，公开内容仍可继续浏览':'已安全退出'),80)}
@@ -279,7 +279,7 @@
     </div></div>`
   }
   function volMessages(){const list=state.appSubmitted?[['申请提交成功','我们已收到你的 2026年10月招募申请，当前进入资格预审。','刚刚',true]]:[['健康材料补件提醒','请在 9月20日 18:00 前补充必要健康材料。','今天 15:20',true],['面试安排已确认','你的在线面试时间为 9月17日 14:00，请提前 10 分钟进入。','9月15日',true],['资格预审通过','你的申请已通过资格预审，进入初选环节。','9月14日',false],['申请提交成功','我们已收到你的 2026年10月招募申请。','9月12日',false]];return `${pageHead('消息中心','站内信是流程通知的权威记录。','<button class="btn" onclick="toast(\'全部消息已标记为已读\')">全部标为已读</button>')}<div class="message-list">${list.map(x=>`<article class="message ${x[3]?'unread':''}"><div class="message-icon">信</div><div class="message-body"><b>${x[0]} ${x[3]?tag('未读'):''}</b><p>${x[1]}</p></div><time>${x[2]}</time></article>`).join('')}</div>`}
-  function enforceMobileVolunteer(){if(isMobileView()&&state.mode==='staff'){state.authenticated=false;state.mode='volunteer';state.showVolunteerLogin=true;state.loginReturnView='home';render();window.scrollTo(0,0)}}
+  function enforceMobileVolunteer(){if(isMobileView()&&state.mode==='staff'){state.authenticated=false;state.mode='volunteer';state.volView='home';state.showVolunteerLogin=false;state.loginReturnView='home';render();window.scrollTo(0,0)}}
   mobileMedia.addEventListener?.('change',enforceMobileVolunteer);
   touchMobileMedia.addEventListener?.('change',enforceMobileVolunteer);
   render();
